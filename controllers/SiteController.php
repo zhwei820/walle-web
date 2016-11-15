@@ -2,17 +2,16 @@
 
 namespace app\controllers;
 
-use Yii;
 use app\components\Controller;
-use app\models\User;
 use app\models\forms\LoginForm;
 use app\models\forms\PasswordResetRequestForm;
 use app\models\forms\ResetPasswordForm;
-use yii\web\HttpException;
+use app\models\User;
+use Yii;
 use yii\base\Exception;
-use yii\base\UserException;
 use yii\base\InvalidParamException;
 use yii\web\BadRequestHttpException;
+use yii\web\HttpException;
 
 class SiteController extends Controller
 {
@@ -23,13 +22,16 @@ class SiteController extends Controller
      */
     public function actionIndex()
     {
-        return $this->render('index');
+        // return $this->render('index');
+        return $this->goHome();
+
     }
 
     /**
      * User login
      */
-    public function actionLogin() {
+    public function actionLogin()
+    {
         if (!\Yii::$app->user->isGuest) {
             return $this->goHome();
         }
@@ -57,29 +59,30 @@ class SiteController extends Controller
     /**
      * User signup
      */
-    public function actionSignup() {
-        $user = new User(['scenario' => 'signup']);
-        if ($user->load(Yii::$app->request->post())) {
-            $user->status = User::STATUS_ACTIVE;
-            if ($user->save()) {
-                Yii::$app->mail->compose('confirmEmail', ['user' => $user])
-                    ->setFrom(Yii::$app->mail->messageConfig['from'])
-                    ->setTo($user->email)
-                    ->setSubject('瓦力平台 - ' . $user->realname)
-                    ->send();
-                Yii::$app->session->setFlash('user-signed-up');
-                return $this->refresh();
-            }
-        }
+    // public function actionSignup()
+    // {
+    //     $user = new User(['scenario' => 'signup']);
+    //     if ($user->load(Yii::$app->request->post())) {
+    //         $user->status = User::STATUS_ACTIVE;
+    //         if ($user->save()) {
+    //             Yii::$app->mail->compose('confirmEmail', ['user' => $user])
+    //                 ->setFrom(Yii::$app->mail->messageConfig['from'])
+    //                 ->setTo($user->email)
+    //                 ->setSubject('瓦力平台 - ' . $user->realname)
+    //                 ->send();
+    //             Yii::$app->session->setFlash('user-signed-up');
+    //             return $this->refresh();
+    //         }
+    //     }
 
-        if (Yii::$app->session->hasFlash('user-signed-up')) {
-            return $this->render('signedUp');
-        }
+    //     if (Yii::$app->session->hasFlash('user-signed-up')) {
+    //         return $this->render('signedUp');
+    //     }
 
-        return $this->render('signup', [
-            'model' => $user,
-        ]);
-    }
+    //     return $this->render('signup', [
+    //         'model' => $user,
+    //     ]);
+    // }
 
     /**
      * Confirm email
@@ -87,7 +90,7 @@ class SiteController extends Controller
     public function actionConfirmEmail($token)
     {
         $user = User::find()->emailConfirmationToken($token)->one();
-        if ($user!==null && $user->removeEmailConfirmationToken(true)) {
+        if ($user !== null && $user->removeEmailConfirmationToken(true)) {
             Yii::$app->getUser()->login($user);
             return $this->goHome();
         }
@@ -100,8 +103,10 @@ class SiteController extends Controller
      */
     public function actionRequestPasswordReset()
     {
+
         $model = new PasswordResetRequestForm();
         if ($model->load(Yii::$app->request->post()) && $model->validate()) {
+
             if ($model->sendEmail()) {
                 Yii::$app->getSession()->setFlash('success', 'Check your email for further instructions.');
                 return $this->goHome();
@@ -137,12 +142,13 @@ class SiteController extends Controller
         ]);
     }
 
-
-    public function actionSearch() {
+    public function actionSearch()
+    {
 
     }
 
-    public function actionError() {
+    public function actionError()
+    {
         if (($exception = Yii::$app->getErrorHandler()->exception) === null) {
             return '';
         }
